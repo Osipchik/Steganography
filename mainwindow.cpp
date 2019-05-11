@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     stg = nullptr;
     image = nullptr;
+
     ui->textEdit->setVisible(false);
     ui->CancelButton->setVisible(false);
 
@@ -22,8 +23,46 @@ MainWindow::MainWindow(QWidget *parent) :
     OpenButton->setText("Открыть");
     SaveButton->setText("Сохранить");
 
+    OpenButton->setStyleSheet("QToolButton {"
+                               "background-color: #212121;"
+                               "border: 1px solid #505050;"
+                               "border-color: #505050;"
+                               "color: #FFFFFF;"
+                               "text-align:center;"
+                               "padding: 2px 4px;"
+                               "vertical-align: middle;"
+                               "text-decoration:none;}"
+
+                              "QToolButton:hover {"
+                               "border-color: rgba(82, 168, 236, 0.8);"
+                               "background-color: #303030;"
+                               "color: #52a8ec;"
+                               "outline: 0 none;}");
+
+    SaveButton->setStyleSheet("QToolButton {"
+                              "background-color: #212121;"
+                              "border: 1px solid #505050;"
+                              "border-color: #505050;"
+                              "color: #FFFFFF;"
+                              "text-align:center;"
+                              "padding: 2px 4px;"
+                              "vertical-align: middle;"
+                              "text-decoration:none;}"
+
+                             "QToolButton:hover {"
+                              "border-color: rgba(82, 168, 236, 0.8);"
+                              "background-color: #303030;"
+                              "color: #52a8ec;"
+                              "outline: 0 none;}");
+
     ToolBar->addWidget(OpenButton);
     ToolBar->addWidget(SaveButton);
+    ToolBar->setStyleSheet("QToolBar {"
+                           "background-color: #191919;"
+                           "border: 1px solid #141414;"
+                           "padding: 2px;"
+                           "font-weight: bold;}");
+
     addToolBar(Qt::TopToolBarArea, ToolBar);
 
     connect(OpenButton, SIGNAL(clicked()), this, SLOT (on_OpenButton_clicked()));
@@ -53,12 +92,18 @@ void MainWindow::on_OpenButton_clicked()
                                                           "Images (*.png *.bmp *.jpg);");
 
     if(fileName == "") return;
+    if(image) delete image;
     image = new QImage(fileName);
 
     if(stg) delete stg;
     stg = new Steganography();
 
-    ui->statusBar->showMessage("Количество символов: " + stg->GetSize(*image) + "/" +
+    QString mSize = stg->GetSize(*image);
+    for(int i = mSize.length() - 3; i > 0; i -= 3)
+    {
+        mSize.insert(i, ' ');
+    }
+    ui->statusBar->showMessage("Количество символов: " + mSize + "/" +
                                QString::number(image->height() * image->width() - image->height()-1));
 
     int pixWidth  = ui->labelImage->width();
@@ -129,18 +174,23 @@ void MainWindow::on_ReadButton_clicked()
 
 void MainWindow::on_textEdit_textChanged()
 {
-    int mSize = ui->textEdit->toPlainText().length();
     int maxSize = image->height() * image->width() - image->height()-1;
 
+    QString mSize = ui->textEdit->toPlainText();
+    int size = mSize.length();
     if(mSize > maxSize)
     {
         QMessageBox::warning(this, "Warning", "Максимальное колчество символов");
-        QString message = ui->textEdit->toPlainText().remove(maxSize-1, mSize - maxSize);
+        QString message = ui->textEdit->toPlainText().remove(maxSize-1, size - maxSize);
         ui->textEdit->clear();
         ui->textEdit->setText(message);
-        mSize = maxSize;
+        size = maxSize;
     }
-    ui->statusBar->showMessage("Количество символов: " + QString::number(mSize) + "/" +
+    for(int i = mSize.length() - 3; i > 0; i -= 3)
+    {
+        mSize.insert(i, ' ');
+    }
+    ui->statusBar->showMessage("Количество символов: " + QString::number(size) + "/" +
                                QString::number(image->height() * image->width() - image->height()-1));
 }
 
