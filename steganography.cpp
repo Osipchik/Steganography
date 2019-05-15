@@ -1,90 +1,52 @@
 #include "steganography.h"
 
-#include <QDebug>
+#include <QtMath>
 
-QVector<QByteArray> Steganography::textToByteArr(const QString message)
+
+
+QString Steganography::int_to_bit(const int num, int size)
 {
-    QVector<QByteArray> byte_vec;
-    foreach(QString ch, message)
+    QString bin = QString("%1").arg(num, size, 2, QChar('0'));
+    QString bit(size);
+    int i = 0;
+    foreach(QChar ch, bin)
     {
-        byte_vec.push_back(ch.toUtf8());
-    }
-    return byte_vec;
-}
-
-QByteArray Steganography::ToByteArr(const QBitArray &bits)
-{
-    QByteArray bytes;
-    bytes.resize(bits.count()/8);
-    bytes.fill(0);
-
-    for(int b=0; b < bits.count(); ++b)
-        bytes[b/8] = (bytes.at(b/8) | ((bits[b] ? 1 : 0)<<(b%8)));
-
-    return bytes;
-}
-
-QBitArray Steganography::ToBitArray(const QByteArray &bytes)
-{
-    QBitArray bits;
-    int size = bytes.size() * 8;
-    bits.resize(size);
-
-    int gpos = 0;
-    foreach(char ch, bytes)
-    {
-        unsigned char uc = ch;
-        for (int i = 0; i < 8; ++i)
-        {
-            bits[gpos++] = (uc & 0x01);
-            uc = uc >> 1;
-        }
-    }
-    return bits;
-}
-
-QBitArray Steganography::ToBitArray(const int num)
-{
-    QString BIN = QString("%1").arg(num, 8, 2, QChar('0'));
-    QBitArray bit(8);
-
-    for(int i = 0; i < 8; i++)
-    {
-        if(BIN[i] == '1') bit[i] = 1;
-        else bit[i] = 0;
+        bit[i++] = (ch == '1') ? '1' : '0';
     }
     return bit;
 }
 
-int Steganography::BitToInt(const QBitArray &bits)
+int Steganography::bit16_to_int(QString BIN)
 {
-    int n = 0, total = bits.size();
-    for(int i = 0; i < total; i++) { n = n * 10 + bits[i]; }
-    return QString::number(n).toInt(nullptr, 2);
+    QString byte_high = BIN.mid(0, 8);
+    QString byte_low = BIN.mid(8, 8);
+
+    int X1 = byte_high.toInt(nullptr, 2);
+    int count = 7 - BIN.indexOf('1');
+    if(X1) X1 += 256 * pow(2, count) - pow(2, count);
+
+    return X1 + byte_low.toInt(nullptr, 2);
 }
 
-void Steganography::SetSize(int size, QImage &image)
+void Steganography::SetSize(QImage &image, int size)
 {
     QString mSize = QString("%1").arg(size, 0, 36);
-
     int height = image.height();
-    QColor pixel;
-    QVector<QByteArray> byte_size = textToByteArr(mSize);
 
-    QBitArray bit_size(8);
-    QBitArray red;
-    QBitArray green;
-    QBitArray blue;
-    for(int y = 0, mLength = mSize.length(); y < height; y++)
+    QString bit_size;
+    QColor pixel;
+    QString red;
+    QString green;
+    QString blue;
+    for(int y = 0; y < height; y++)
     {
         pixel = image.pixel(0, y);
-        if(y < mLength)
+        if(y < mSize.length())
         {
-            bit_size = ToBitArray(byte_size[y]);
-
-            red = ToBitArray(pixel.red());
-            green = ToBitArray(pixel.green());
-            blue = ToBitArray(pixel.blue());
+            bit_size = QString("%1").arg(mSize[y].unicode(), 8, 2, QChar('0'));
+            red = int_to_bit(pixel.red());
+            green = int_to_bit(pixel.green());
+            blue = int_to_bit(pixel.blue());
 
             red[6] = bit_size[0];
             red[7] = bit_size[1];
@@ -97,28 +59,27 @@ void Steganography::SetSize(int size, QImage &image)
             blue[6] = bit_size[6];
             blue[7] = bit_size[7];
 
-            image.setPixel(0, y, qRgb(BitToInt(red), BitToInt(green), BitToInt(blue)));
-            //image.setPixel(0, y, qRgb(255, 255, 255));
+            image.setPixel(0, y, qRgb(red.toInt(nullptr, 2), green.toInt(nullptr, 2), blue.toInt(nullptr, 2)));
         }
         else
         {
-            red = ToBitArray(pixel.red());
-            green = ToBitArray(pixel.green());
-            blue = ToBitArray(pixel.blue());
+            red = int_to_bit(pixel.red());
+            green = int_to_bit(pixel.green());
+            blue = int_to_bit(pixel.blue());
 
-            red[6] = 0;
-            red[7] = 0;
+            red[6] = '0';
+            red[7] = '0';
 
-            green[5] = 0;
-            green[6] = 0;
-            green[7] = 0;
+            green[5] = '0';
+            green[6] = '0';
+            green[7] = '0';
 
-            blue[5] = 0;
-            blue[6] = 0;
-            blue[7] = 0;
+            blue[5] = '0';
+            blue[6] = '0';
+            blue[7] = '0';
 
-            image.setPixel(0, y, qRgb(BitToInt(red), BitToInt(green), BitToInt(blue)));
-            //image.setPixel(0, y, qRgb(0, 0, 0));
+            image.setPixel(0, y, qRgb(red.toInt(nullptr, 2), green.toInt(nullptr, 2), blue.toInt(nullptr, 2)));
+            break;
         }
     }
 }
@@ -126,22 +87,20 @@ void Steganography::SetSize(int size, QImage &image)
 QString Steganography::GetSize(QImage &image)
 {
     int height = image.height();
+    QString size = "", zero_str = "00000000";
+
+    QString bit_size;
     QColor pixel;
-    QString size = "";
-
-    QBitArray zeroBit(8);
-    zeroBit.fill(0);
-
-    QBitArray red;
-    QBitArray green;
-    QBitArray blue;
-    QBitArray bit_size(8);
-    for(int y = 0, i = 0; y < height; y++, i = 0)
+    QString red;
+    QString green;
+    QString blue;
+    int count = 0;
+    for(int y = 0; y < height; y++)
     {
         pixel = image.pixel(0, y);
-        red = ToBitArray(pixel.red());
-        green = ToBitArray(pixel.green());
-        blue = ToBitArray(pixel.blue());
+        red = int_to_bit(pixel.red(), 8);
+        green = int_to_bit(pixel.green(), 8);
+        blue = int_to_bit(pixel.blue(), 8);
 
         bit_size[0] = red[6];
         bit_size[1] = red[7];
@@ -154,36 +113,44 @@ QString Steganography::GetSize(QImage &image)
         bit_size[6] = blue[6];
         bit_size[7] = blue[7];
 
-        if(bit_size == zeroBit) continue;
-
-        size += ToByteArr(bit_size);
+        count = y;
+        if(bit_size == zero_str) break;
+        size += QChar(bit_size.toInt(nullptr, 2));
     }
-    return QString::number(size.toInt(nullptr, 36), 10);
+    return QString::number(size.toInt(nullptr, 36));
+}
+
+int Steganography::GetMaxSize(QImage &image)
+{
+    int width = image.width()-1, height = image.height();
+    while(width%2 != 0) { width--; }
+    return ((width * height) - height) / 2;
 }
 
 void Steganography::encode(QString message, QImage &image)
 {
-    int height = image.height(), width = image.width(), mSize = message.length();
-    QColor pixel;
-    QVector<QByteArray> byte_mess = textToByteArr(message);
+    int height = image.height(), width = image.width()-1, mSize = message.length();
+    while(width%2 != 0) { width--; }
+    SetSize(image, mSize);
 
-    QBitArray bit_mess;
-    QBitArray red;
-    QBitArray green;
-    QBitArray blue;
+    QColor pixel;
+    QString bit_mess(16);
+    QString red;
+    QString green;
+    QString blue;
     for(int y = 0, count = 0; y < height; y++)
     {
-        if(count == mSize) { break; }
+        if(count == mSize) break;
         for(int x = 1; x < width; x++)
         {
-            if(count == mSize) { break; }
+            if(count == mSize) break;
+
+            bit_mess = QString("%1").arg(message[count++].unicode(), 16, 2, QChar('0'));
 
             pixel = image.pixel(x, y);
-            bit_mess = ToBitArray(byte_mess[count++]);
-
-            red = ToBitArray(pixel.red());
-            green = ToBitArray(pixel.green());
-            blue = ToBitArray(pixel.blue());
+            red = int_to_bit(pixel.red());
+            green = int_to_bit(pixel.green());
+            blue = int_to_bit(pixel.blue());
 
             red[6] = bit_mess[0];
             red[7] = bit_mess[1];
@@ -196,34 +163,50 @@ void Steganography::encode(QString message, QImage &image)
             blue[6] = bit_mess[6];
             blue[7] = bit_mess[7];
 
-            image.setPixel(x, y, qRgb(BitToInt(red), BitToInt(green), BitToInt(blue)));
-            //image.setPixel(x, y, qRgb(255, 255, 255));
-         }
+            image.setPixel(x, y, qRgb(red.toInt(nullptr, 2), green.toInt(nullptr, 2), blue.toInt(nullptr, 2)));
+
+            pixel = image.pixel(++x, y);
+            red = int_to_bit(pixel.red());
+            green = int_to_bit(pixel.green());
+            blue = int_to_bit(pixel.blue());
+
+            red[6] = bit_mess[8];
+            red[7] = bit_mess[9];
+
+            green[5] = bit_mess[10];
+            green[6] = bit_mess[11];
+            green[7] = bit_mess[12];
+
+            blue[5] = bit_mess[13];
+            blue[6] = bit_mess[14];
+            blue[7] = bit_mess[15];
+
+            image.setPixel(x, y, qRgb(red.toInt(nullptr, 2), green.toInt(nullptr, 2), blue.toInt(nullptr, 2)));
+        }
     }
-    SetSize(mSize, image);
 }
 
-QString Steganography::decode(QImage &image, int mSize)
+QString Steganography::decode(QImage &image)
 {
-    int height = image.height(), width = image.width();
+    int height = image.height(), width = image.width()-1, mSize = GetSize(image).toInt();
+    while(width%2 != 0) { width--; }
+
     QColor pixel;
-    QString message = "";
-
-    QBitArray bit_mess(8);
-    QBitArray red;
-    QBitArray green;
-    QBitArray blue;
-    for(int y = 0; y < height; y++)
+    QString bit_mess(16), message = "";
+    QString red;
+    QString green;
+    QString blue;
+    for(int y = 0, count = 0; y < height; y++)
     {
-        for(int x = 1; x < width; x++, mSize--)
+        if(count == mSize) break;
+        for(int x = 1; x < width; x++)
         {
-            if(mSize == 0) return message;
-
+            if(count == mSize) break;
+            count++;
             pixel = image.pixel(x, y);
-
-            red = ToBitArray(pixel.red());
-            green = ToBitArray(pixel.green());
-            blue = ToBitArray(pixel.blue());
+            red = int_to_bit(pixel.red());
+            green = int_to_bit(pixel.green());
+            blue = int_to_bit(pixel.blue());
 
             bit_mess[0] = red[6];
             bit_mess[1] = red[7];
@@ -236,11 +219,24 @@ QString Steganography::decode(QImage &image, int mSize)
             bit_mess[6] = blue[6];
             bit_mess[7] = blue[7];
 
-            message += ToByteArr(bit_mess);
+            pixel = image.pixel(++x, y);
+            red = int_to_bit(pixel.red());
+            green = int_to_bit(pixel.green());
+            blue = int_to_bit(pixel.blue());
+
+            bit_mess[8] = red[6];
+            bit_mess[9] = red[7];
+
+            bit_mess[10] = green[5];
+            bit_mess[11] = green[6];
+            bit_mess[12] = green[7];
+
+            bit_mess[13] = blue[5];
+            bit_mess[14] = blue[6];
+            bit_mess[15] = blue[7];
+
+            message += QChar(bit16_to_int(bit_mess));
         }
     }
-
-    return QString();
+    return message;
 }
-
-

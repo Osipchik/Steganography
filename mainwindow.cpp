@@ -104,7 +104,7 @@ void MainWindow::on_OpenButton_clicked()
         mSize.insert(i, ' ');
     }
     ui->statusBar->showMessage("Количество символов: " + mSize + "/" +
-                               QString::number(image->height() * image->width() - image->height()-1));
+                               QString::number(stg->GetMaxSize(*image)));
 
     int pixWidth  = ui->labelImage->width();
     int pixHeight = ui->labelImage->height();
@@ -169,16 +169,16 @@ void MainWindow::on_ReadButton_clicked()
     ui->textEdit->setVisible(true);
 
     ui->textEdit->clear();
-    ui->textEdit->setText(stg->decode(*image, mSize));
+    ui->textEdit->setText(stg->decode(*image));
 }
 
 void MainWindow::on_textEdit_textChanged()
 {
-    int maxSize = image->height() * image->width() - image->height()-1;
+    int maxSize = stg->GetMaxSize(*image);
 
     QString mSize = ui->textEdit->toPlainText();
     int size = mSize.length();
-    if(mSize > maxSize)
+    if(size > maxSize)
     {
         QMessageBox::warning(this, "Warning", "Максимальное колчество символов");
         QString message = ui->textEdit->toPlainText().remove(maxSize-1, size - maxSize);
@@ -191,7 +191,7 @@ void MainWindow::on_textEdit_textChanged()
         mSize.insert(i, ' ');
     }
     ui->statusBar->showMessage("Количество символов: " + QString::number(size) + "/" +
-                               QString::number(image->height() * image->width() - image->height()-1));
+                               QString::number(stg->GetMaxSize(*image)));
 }
 
 void MainWindow::on_CancelButton_clicked()
