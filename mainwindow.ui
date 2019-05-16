@@ -227,7 +227,7 @@ QPushButton:pressed {
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="TextButton">
+       <widget class="QPushButton" name="AddTextButton">
         <property name="font">
          <font>
           <pointsize>-1</pointsize>

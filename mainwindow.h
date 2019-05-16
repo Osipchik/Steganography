@@ -30,16 +30,17 @@ private slots:
     void on_OpenButton_clicked();
     void on_SaveButton_clicked();
 
-    void on_TextButton_clicked();
+    void on_AddTextButton_clicked();
     void on_ReadButton_clicked();
 
-    void on_textEdit_textChanged();
-
     void on_CancelButton_clicked();
+
+    void text_edit_visible(bool visible);
+
+    void on_textEdit_textChanged();
 
 private:
     Ui::MainWindow *ui;
     virtual void resizeEvent(QResizeEvent *event);
 };
-
 #endif // MAINWINDOW_H

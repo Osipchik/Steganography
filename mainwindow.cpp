@@ -71,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    delete stg;
     delete ui;
 }
 
@@ -85,6 +86,28 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
+void MainWindow::text_edit_visible(bool visible)
+{
+    if(visible)
+    {
+        ui->labelImage->setVisible(false);
+        ui->AddTextButton->setVisible(false);
+        ui->ReadButton->setVisible(false);
+
+        ui->CancelButton->setVisible(true);
+        ui->textEdit->setVisible(true);
+    }
+    else
+    {
+        ui->textEdit->setVisible(false);
+        ui->CancelButton->setVisible(false);
+
+        ui->AddTextButton->setVisible(true);
+        ui->labelImage->setVisible(true);
+        ui->ReadButton->setVisible(true);
+    }
+}
+
 void MainWindow::on_OpenButton_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this, QString::fromUtf8("Открыть файл"),
@@ -96,16 +119,12 @@ void MainWindow::on_OpenButton_clicked()
     image = new QImage(fileName);
 
     if(stg) delete stg;
-    stg = new Steganography();
+    stg = new Steganography(*image);
 
-    QString mSize = stg->GetSize(*image);
-    for(int i = mSize.length() - 3; i > 0; i -= 3)
-    {
-        mSize.insert(i, ' ');
-    }
+    QString mSize = stg->GetSize();
     ui->statusBar->showMessage("Количество символов: " + mSize + "/" +
-                               QString::number(stg->GetMaxSize(*image)));
-
+                               QString::number(stg->GetMaxSize()));
+    text_edit_visible(false);
     int pixWidth  = ui->labelImage->width();
     int pixHeight = ui->labelImage->height();
     ui->labelImage->setPixmap(QPixmap::fromImage(*image).scaled(pixWidth, pixHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation));
@@ -118,33 +137,24 @@ void MainWindow::on_SaveButton_clicked()
         QMessageBox::warning(this, "Warning", "Выберите изображение");
         return;
     }
-    stg->encode(ui->textEdit->toPlainText(), *image);
+    //stg->encode(ui->textEdit->toPlainText());
 
-    ui->textEdit->setVisible(false);
-    ui->CancelButton->setVisible(false);
-
-    ui->TextButton->setVisible(true);
-    ui->labelImage->setVisible(true);
-    ui->ReadButton->setVisible(true);
+    text_edit_visible(false);
     image->save(QFileDialog::getSaveFileName(this, QString::fromUtf8("Сохранить файл"),
                                                    QDir::currentPath(),
                                                    "Images (*.png);\n"
                                                    "Images (*.bmp);"));
 }
 
-void MainWindow::on_TextButton_clicked()
+void MainWindow::on_AddTextButton_clicked()
 {
     if(!image)
     {
         QMessageBox::warning(this, "", "Выберите изображение");
         return;
     }
-    ui->labelImage->setVisible(false);
-    ui->TextButton->setVisible(false);
-    ui->ReadButton->setVisible(false);
-
-    ui->CancelButton->setVisible(true);
-    ui->textEdit->setVisible(true);
+    text_edit_visible(true);
+    ui->textEdit->clear();
 }
 
 void MainWindow::on_ReadButton_clicked()
@@ -154,27 +164,22 @@ void MainWindow::on_ReadButton_clicked()
         QMessageBox::warning(this, "Warning", "Нет изображения для чтения");
         return;
     }
-    int mSize = stg->GetSize(*image).toInt();
+    int mSize = stg->GetSize().toInt();
     if(!mSize)
     {
         QMessageBox::warning(this, "Warning", "Изображение не содержить текст");
         return;
     }
 
-    ui->labelImage->setVisible(false);
-    ui->TextButton->setVisible(false);
-    ui->ReadButton->setVisible(false);
-
-    ui->CancelButton->setVisible(true);
-    ui->textEdit->setVisible(true);
+    text_edit_visible(true);
 
     ui->textEdit->clear();
-    ui->textEdit->setText(stg->decode(*image));
+    ui->textEdit->setText(stg->decode());
 }
 
 void MainWindow::on_textEdit_textChanged()
 {
-    int maxSize = stg->GetMaxSize(*image);
+    int maxSize = stg->GetMaxSize();
 
     QString mSize = ui->textEdit->toPlainText();
     int size = mSize.length();
@@ -186,20 +191,11 @@ void MainWindow::on_textEdit_textChanged()
         ui->textEdit->setText(message);
         size = maxSize;
     }
-    for(int i = mSize.length() - 3; i > 0; i -= 3)
-    {
-        mSize.insert(i, ' ');
-    }
     ui->statusBar->showMessage("Количество символов: " + QString::number(size) + "/" +
-                               QString::number(stg->GetMaxSize(*image)));
+                               QString::number(stg->GetMaxSize()));
 }
 
 void MainWindow::on_CancelButton_clicked()
 {
-    ui->textEdit->setVisible(false);
-    ui->CancelButton->setVisible(false);
-
-    ui->TextButton->setVisible(true);
-    ui->labelImage->setVisible(true);
-    ui->ReadButton->setVisible(true);
+    text_edit_visible(false);
 }
