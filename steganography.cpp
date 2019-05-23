@@ -4,17 +4,17 @@
 
 
 
-QString Steganography::int_to_bit(const int num, int size)
-{
-    QString bin = QString("%1").arg(num, size, 2, QChar('0'));
-    QString bit(size);
-    int i = 0;
-    foreach(QChar ch, bin)
-    {
-        bit[i++] = (ch == '1') ? '1' : '0';
-    }
-    return bit;
-}
+//QString Steganography::int_to_bit(const int num, int size)
+//{
+//    QString bin = QString("%1").arg(num, size, 2, QChar('0'));
+//    QString bit(size);
+//    int i = 0;
+//    foreach(QChar ch, bin)
+//    {
+//        bit[i++] = (ch == '1') ? '1' : '0';
+//    }
+//    return bit;
+//}
 
 int Steganography::bit16_to_int(QString BIN)
 {
@@ -23,13 +23,14 @@ int Steganography::bit16_to_int(QString BIN)
 
     int X1 = byte_high.toInt(nullptr, 2);
     int count = 7 - BIN.indexOf('1');
-    if(X1) X1 += 256 * pow(2, count) - pow(2, count);
-
+    //if(X1) X1 += 256 * pow(2, count) - pow(2, count);
+    if(X1) X1 += 255 * pow(2, count);
     return X1 + byte_low.toInt(nullptr, 2);
 }
 
 void Steganography::SetSize(int size)
 {
+    // перевод числа в 36-ричную сс,чтобы занимать меньше пикселей
     QString mSize = QString("%1").arg(size, 0, 36);
     int height = image->height();
 
@@ -41,12 +42,16 @@ void Steganography::SetSize(int size)
     for(int y = 0; y < height; y++)
     {
         pixel = image->pixel(0, y);
+        red = QString("%1").arg(pixel.red(), 8, 2, QChar('0'));
+        green = QString("%1").arg(pixel.green(), 8, 2, QChar('0'));
+        blue = QString("%1").arg(pixel.blue(), 8, 2, QChar('0'));
+
         if(y < mSize.length())
         {
             bit_size = QString("%1").arg(mSize[y].unicode(), 8, 2, QChar('0'));
-            red = int_to_bit(pixel.red());
-            green = int_to_bit(pixel.green());
-            blue = int_to_bit(pixel.blue());
+//            red = int_to_bit(pixel.red());
+//            green = int_to_bit(pixel.green());
+//            blue = int_to_bit(pixel.blue());
 
             red[6] = bit_size[0];
             red[7] = bit_size[1];
@@ -63,9 +68,9 @@ void Steganography::SetSize(int size)
         }
         else
         {
-            red = int_to_bit(pixel.red());
-            green = int_to_bit(pixel.green());
-            blue = int_to_bit(pixel.blue());
+//            red = int_to_bit(pixel.red());
+//            green = int_to_bit(pixel.green());
+//            blue = int_to_bit(pixel.blue());
 
             red[6] = '0';
             red[7] = '0';
@@ -99,13 +104,16 @@ QString Steganography::GetSize()
     QString red;
     QString green;
     QString blue;
-    int count = 0;
     for(int y = 0; y < height; y++)
     {
         pixel = image->pixel(0, y);
-        red = int_to_bit(pixel.red(), 8);
-        green = int_to_bit(pixel.green(), 8);
-        blue = int_to_bit(pixel.blue(), 8);
+//        red = int_to_bit(pixel.red(), 8);
+//        green = int_to_bit(pixel.green(), 8);
+//        blue = int_to_bit(pixel.blue(), 8);
+
+        red = QString("%1").arg(pixel.red(), 8, 2, QChar('0'));
+        green = QString("%1").arg(pixel.green(), 8, 2, QChar('0'));
+        blue = QString("%1").arg(pixel.blue(), 8, 2, QChar('0'));
 
         bit_size[0] = red[6];
         bit_size[1] = red[7];
@@ -118,7 +126,6 @@ QString Steganography::GetSize()
         bit_size[6] = blue[6];
         bit_size[7] = blue[7];
 
-        count = y;
         if(bit_size == zero_str) break;
         size += QChar(bit_size.toInt(nullptr, 2));
     }
@@ -128,6 +135,7 @@ QString Steganography::GetSize()
 int Steganography::GetMaxSize()
 {
     int width = image->width()-1, height = image->height();
+    //ширина изображения должны быть четной, для корректного шифрования
     while(width%2 != 0) { width--; }
     return ((width * height) - height) / 2;
 }
@@ -135,6 +143,7 @@ int Steganography::GetMaxSize()
 void Steganography::encode(QString message)
 {
     int height = image->height(), width = image->width()-1, mSize = message.length();
+    //ширина изображения должны быть четной, для корректного шифрования
     while(width%2 != 0) { width--; }
     SetSize(mSize);
 
@@ -153,9 +162,13 @@ void Steganography::encode(QString message)
             bit_mess = QString("%1").arg(message[count++].unicode(), 16, 2, QChar('0'));
 
             pixel = image->pixel(x, y);
-            red = int_to_bit(pixel.red());
-            green = int_to_bit(pixel.green());
-            blue = int_to_bit(pixel.blue());
+//            red = int_to_bit(pixel.red());
+//            green = int_to_bit(pixel.green());
+//            blue = int_to_bit(pixel.blue());
+
+            red = QString("%1").arg(pixel.red(), 8, 2, QChar('0'));
+            green = QString("%1").arg(pixel.green(), 8, 2, QChar('0'));
+            blue = QString("%1").arg(pixel.blue(), 8, 2, QChar('0'));
 
             red[6] = bit_mess[0];
             red[7] = bit_mess[1];
@@ -171,9 +184,13 @@ void Steganography::encode(QString message)
             image->setPixel(x, y, qRgb(red.toInt(nullptr, 2), green.toInt(nullptr, 2), blue.toInt(nullptr, 2)));
 
             pixel = image->pixel(++x, y);
-            red = int_to_bit(pixel.red());
-            green = int_to_bit(pixel.green());
-            blue = int_to_bit(pixel.blue());
+//            red = int_to_bit(pixel.red());
+//            green = int_to_bit(pixel.green());
+//            blue = int_to_bit(pixel.blue());
+
+            red = QString("%1").arg(pixel.red(), 8, 2, QChar('0'));
+            green = QString("%1").arg(pixel.green(), 8, 2, QChar('0'));
+            blue = QString("%1").arg(pixel.blue(), 8, 2, QChar('0'));
 
             red[6] = bit_mess[8];
             red[7] = bit_mess[9];
@@ -209,9 +226,13 @@ QString Steganography::decode()
             if(count == mSize) break;
             count++;
             pixel = image->pixel(x, y);
-            red = int_to_bit(pixel.red());
-            green = int_to_bit(pixel.green());
-            blue = int_to_bit(pixel.blue());
+//            red = int_to_bit(pixel.red());
+//            green = int_to_bit(pixel.green());
+//            blue = int_to_bit(pixel.blue());
+
+            red = QString("%1").arg(pixel.red(), 8, 2, QChar('0'));
+            green = QString("%1").arg(pixel.green(), 8, 2, QChar('0'));
+            blue = QString("%1").arg(pixel.blue(), 8, 2, QChar('0'));
 
             bit_mess[0] = red[6];
             bit_mess[1] = red[7];
@@ -225,9 +246,13 @@ QString Steganography::decode()
             bit_mess[7] = blue[7];
 
             pixel = image->pixel(++x, y);
-            red = int_to_bit(pixel.red());
-            green = int_to_bit(pixel.green());
-            blue = int_to_bit(pixel.blue());
+//            red = int_to_bit(pixel.red());
+//            green = int_to_bit(pixel.green());
+//            blue = int_to_bit(pixel.blue());
+
+            red = QString("%1").arg(pixel.red(), 8, 2, QChar('0'));
+            green = QString("%1").arg(pixel.green(), 8, 2, QChar('0'));
+            blue = QString("%1").arg(pixel.blue(), 8, 2, QChar('0'));
 
             bit_mess[8] = red[6];
             bit_mess[9] = red[7];
