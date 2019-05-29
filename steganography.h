@@ -6,7 +6,6 @@
 
 class Steganography
 {
-    QString int_to_bit(const int num, int size = 8);
     int bit16_to_int(QString BIN);
 
     void SetSize(int size);
@@ -25,3 +24,4 @@ public:
 
 
 #endif // STEGANOGRAPHY_H
+
