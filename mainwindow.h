@@ -3,10 +3,9 @@
 
 #include <QMainWindow>
 #include <QImage>
-#include <QToolBar>
-#include <QToolButton>
 
 #include "steganography.h"
+#include <QGraphicsDropShadowEffect>
 
 namespace Ui {
 class MainWindow;
@@ -23,21 +22,21 @@ public:
      QImage *image;
      Steganography *stg;
 
-     QToolBar *ToolBar;
-     QToolButton *OpenButton, *SaveButton;
-
 private slots:
-    void on_OpenButton_clicked();
-    void on_SaveButton_clicked();
-
     void on_AddTextButton_clicked();
     void on_ReadButton_clicked();
 
     void on_CancelButton_clicked();
-
-    void text_edit_visible(bool visible);
-
     void on_textEdit_textChanged();
+
+    void widget_visible(bool visible);
+    QString number(QString str);
+
+    void on_open_triggered();
+    void on_save_as_triggered();
+
+    void on_open_doc_triggered();
+    void on_save_a_doc_triggered();
 
 private:
     Ui::MainWindow *ui;

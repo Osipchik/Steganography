@@ -52,33 +52,6 @@
    <enum>QTabWidget::Rounded</enum>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <property name="styleSheet">
-    <string notr="true">QWidget {
-   background-color: #252525;
-  border: 0px solid #32414B;
-  padding: 0px;
-  color: #F0F0F0;
-  selection-background-color: #1464A0;
-  selection-color: #F0F0F0;
-}
-
-QWidget:disabled {
-  background-color: #19232D;
-  color: #787878;
-  selection-background-color: #14506E;
-  selection-color: #787878;
-}
-
-QWidget::item:selected {
-  background-color: #1464A0;
-}
-
-QWidget::item:hover {
-  background-color: #148CD2;
-  color: #32414B;
-}
-</string>
-   </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QFrame" name="frame">
@@ -144,11 +117,11 @@ QWidget::item:hover {
        <widget class="QPushButton" name="CancelButton">
         <property name="styleSheet">
          <string notr="true">   QPushButton {
-      background-color: #393939;
         border: 1px solid #CCCCCC;
-        border-color: #CCCCCC;
+       background-color:#d5d5d5;
+        border-color: #55aaff;
     	border-radius: 4px;
-        color: #FFFFFF;
+        color: #000000;
         font-size: 14px;
     	text-align:center;
         padding: 4px 6px;
@@ -158,16 +131,15 @@ QWidget::item:hover {
     }
 
  QPushButton:hover {
-       border-color: rgba(82, 168, 236, 0.8);
-       background-color: #303030;
-       color: #52a8ec;
+       color: #000000;
+       background-color:#7bacda;
        outline: 0 none;
     }
 
 QPushButton:pressed {
-      border-color:  #0089ce;
-      color: #0089ce;
-       background-color: #404040;
+      border-color:  #4b66ff;
+       background-color:#7bacda;
+      color: #000000;
 }</string>
         </property>
         <property name="text">
@@ -195,11 +167,11 @@ QPushButton:pressed {
         </property>
         <property name="styleSheet">
          <string notr="true">   QPushButton {
-      background-color: #393939;
         border: 1px solid #CCCCCC;
-        border-color: #CCCCCC;
+       background-color:#d5d5d5;
+        border-color: #55aaff;
     	border-radius: 4px;
-        color: #FFFFFF;
+        color: #000000;
         font-size: 14px;
     	text-align:center;
         padding: 4px 6px;
@@ -209,16 +181,15 @@ QPushButton:pressed {
     }
 
  QPushButton:hover {
-       border-color: rgba(82, 168, 236, 0.8);
-       background-color: #303030;
-       color: #52a8ec;
+       color: #000000;
+       background-color:#7bacda;
        outline: 0 none;
     }
 
 QPushButton:pressed {
-      border-color:  #0089ce;
-      color: #0089ce;
-       background-color: #404040;
+      border-color:  #4b66ff;
+       background-color:#7bacda;
+      color: #000000;
 }</string>
         </property>
         <property name="text">
@@ -237,11 +208,11 @@ QPushButton:pressed {
         </property>
         <property name="styleSheet">
          <string notr="true">   QPushButton {
-      background-color: #393939;
         border: 1px solid #CCCCCC;
-        border-color: #CCCCCC;
+       background-color:#d5d5d5;
+        border-color: #55aaff;
     	border-radius: 4px;
-        color: #FFFFFF;
+        color: #000000;
         font-size: 14px;
     	text-align:center;
         padding: 4px 6px;
@@ -251,16 +222,15 @@ QPushButton:pressed {
     }
 
  QPushButton:hover {
-       border-color: rgba(82, 168, 236, 0.8);
-       background-color: #303030;
-       color: #52a8ec;
+       color: #000000;
+       background-color:#7bacda;
        outline: 0 none;
     }
 
 QPushButton:pressed {
-      border-color:  #0089ce;
-      color: #0089ce;
-       background-color: #404040;
+      border-color:  #4b66ff;
+       background-color:#7bacda;
+      color: #000000;
 }</string>
         </property>
         <property name="text">
@@ -275,15 +245,13 @@ QPushButton:pressed {
   <widget class="QStatusBar" name="statusBar">
    <property name="styleSheet">
     <string notr="true">QStatusBar {
-  border: 1px solid #141414;
-  background: #202020;
- color:  #F0F0F0;
+  background: #FFFFFF;
+ color:  #000000;
 }
 
 QStatusBar QToolTip {
-  background-color: #148CD2;
-  border: 1px solid #19232D;
-  color: #F0F0F0;
+  background-color: #FFFFFF;
+  color: #000000;
   padding: 0px;
   opacity: 230;
 }
@@ -293,6 +261,52 @@ QStatusBar QLabel {
 }</string>
    </property>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="open"/>
+    <addaction name="save_as"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Документ</string>
+    </property>
+    <addaction name="open_doc"/>
+    <addaction name="save_a_doc"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <action name="open">
+   <property name="text">
+    <string>Открыть</string>
+   </property>
+  </action>
+  <action name="save_as">
+   <property name="text">
+    <string>Сохранить как</string>
+   </property>
+  </action>
+  <action name="open_doc">
+   <property name="text">
+    <string>Открыть</string>
+   </property>
+  </action>
+  <action name="save_a_doc">
+   <property name="text">
+    <string>Сохранить как</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

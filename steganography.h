@@ -24,4 +24,3 @@ public:
 
 
 #endif // STEGANOGRAPHY_H
-
